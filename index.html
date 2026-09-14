@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>35Closer Timer — 집중을 지키는 자동 절전 타이머</title>
+<meta name="description" content="35Closer Timer는 Windows용 원형 카운트다운 타이머와 스마트 자동 절전 기능을 제공하는 데스크톱 앱입니다. 자리를 비우면 알아서 화면을 끄고 재워줍니다.">
+<link rel="canonical" href="https://delight0517.github.io/35closer-timer-site/">
+<meta property="og:title" content="35Closer Timer">
+<meta property="og:description" content="집중이 끝나면, PC도 쉬게 하세요. Windows용 자동 절전 타이머.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #0e0f12; --card:#17181d; --text:#f2f2f0; --muted:#a4a6ad;
+    --accent:#ff8a3d; --accent2:#4dd0e1; --border:#2a2c33;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--text);
+    font-family: -apple-system, "Segoe UI", "Pretendard", Arial, sans-serif;
+    line-height:1.6;
+  }
+  header { padding:80px 24px 40px; text-align:center; }
+  header h1 { font-size:2.4rem; margin:0 0 12px; }
+  header p { color:var(--muted); font-size:1.1rem; max-width:560px; margin:0 auto; }
+  .badge { display:inline-block; background:var(--card); border:1px solid var(--border);
+    border-radius:999px; padding:6px 16px; font-size:.85rem; color:var(--accent2); margin-bottom:20px; }
+  .cta { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+  .btn { padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:600; }
+  .btn-primary { background:var(--accent); color:#111; }
+  .btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+  main { max-width:880px; margin:0 auto; padding:20px 24px 100px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:40px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px; }
+  .card h3 { margin-top:0; font-size:1.05rem; }
+  .card p { color:var(--muted); font-size:.95rem; margin-bottom:0; }
+  .lang-toggle { position:fixed; top:16px; right:16px; }
+  .lang-toggle button { background:var(--card); border:1px solid var(--border); color:var(--text);
+    padding:6px 14px; border-radius:8px; cursor:pointer; font-size:.85rem; }
+  footer { text-align:center; padding:40px 24px; color:var(--muted); font-size:.85rem; }
+  footer a { color:var(--accent2); }
+  [data-lang="en"] { display:none; }
+</style>
+</head>
+<body>
+<div class="lang-toggle"><button id="langBtn" onclick="toggleLang()">EN</button></div>
+
+<header>
+  <span class="badge" data-lang="ko">Windows 데스크톱 앱</span>
+  <span class="badge" data-lang="en">Windows Desktop App</span>
+  <h1 data-lang="ko">35Closer Timer</h1>
+  <h1 data-lang="en" style="display:none">35Closer Timer</h1>
+  <p data-lang="ko">집중이 끝나면, PC도 쉬게 하세요. 원형 카운트다운 타이머 + 자리를 비우면 알아서 화면을 끄고 재우는 스마트 자동 절전.</p>
+  <p data-lang="en" style="display:none">When your focus session ends, let your PC rest too. A circular countdown timer with smart auto-sleep that turns off the display and puts your PC to sleep when you step away.</p>
+  <div class="cta">
+    <a class="btn btn-primary" href="#" data-lang="ko">Microsoft Store에서 받기 (심사 중)</a>
+    <a class="btn btn-primary" href="#" data-lang="en" style="display:none">Get it on Microsoft Store (in review)</a>
+    <a class="btn btn-secondary" href="privacy.html" data-lang="ko">개인정보처리방침</a>
+    <a class="btn btn-secondary" href="privacy.html" data-lang="en" style="display:none">Privacy Policy</a>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card">
+      <h3 data-lang="ko">⏱ 원형 카운트다운 타이머</h3>
+      <h3 data-lang="en" style="display:none">⏱ Circular Countdown Timer</h3>
+      <p data-lang="ko">한눈에 보이는 심플한 타이머로 집중 세션을 관리하세요. 타이머가 끝나면 원하는 동작(알림/화면 끄기/절전)을 지정할 수 있습니다.</p>
+      <p data-lang="en" style="display:none">Manage your focus sessions with a simple, glanceable timer. Choose what happens when it ends — notify, turn off the display, or sleep.</p>
+    </div>
+    <div class="card">
+      <h3 data-lang="ko">🌙 스마트 자동 절전</h3>
+      <h3 data-lang="en" style="display:none">🌙 Smart Auto-Sleep</h3>
+      <p data-lang="ko">키보드/마우스 입력이 없으면 단계적으로 화면을 끄고, 계속 자리를 비우면 실제로 PC를 재웁니다. 켜져만 있는 화면 때문에 전력을 낭비하지 마세요.</p>
+      <p data-lang="en" style="display:none">Turns off your display after a period of no input, and puts the PC to sleep if you stay away — no more wasted power from a screen left on.</p>
+    </div>
+    <div class="card">
+      <h3 data-lang="ko">🔒 안전한 확인 절차</h3>
+      <h3 data-lang="en" style="display:none">🔒 Safe Confirmation</h3>
+      <p data-lang="ko">화면을 끄거나 재우기 전, 취소 가능한 확인 창이 항상 먼저 뜹니다. 작업 중 실수로 잠기는 일이 없도록 설계했습니다.</p>
+      <p data-lang="en" style="display:none">A cancellable confirmation always appears before the display turns off or the PC sleeps — designed so you're never locked out mid-task by mistake.</p>
+    </div>
+    <div class="card">
+      <h3 data-lang="ko">📊 자리비움 리포트</h3>
+      <h3 data-lang="en" style="display:none">📊 Idle & Usage Reports</h3>
+      <p data-lang="ko">오늘/어제/이번 주 단위로 자동 절전이 언제 왜 동작했는지 확인할 수 있습니다.</p>
+      <p data-lang="en" style="display:none">Check when and why auto-sleep triggered, broken down by today, yesterday, or this week.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p data-lang="ko">35Closer Timer &middot; <a href="privacy.html">개인정보처리방침</a></p>
+  <p data-lang="en" style="display:none">35Closer Timer &middot; <a href="privacy.html">Privacy Policy</a></p>
+</footer>
+
+<script>
+function toggleLang(){
+  const isKo = document.querySelector('[data-lang="ko"]').style.display !== 'none';
+  document.querySelectorAll('[data-lang="ko"]').forEach(el => el.style.display = isKo ? 'none' : '');
+  document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = isKo ? '' : 'none');
+  document.getElementById('langBtn').textContent = isKo ? '한국어' : 'EN';
+}
+</script>
+</body>
+</html>
