@@ -1,106 +1,669 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>35Closer Timer — 집중을 지키는 자동 절전 타이머</title>
-<meta name="description" content="35Closer Timer는 Windows용 원형 카운트다운 타이머와 스마트 자동 절전 기능을 제공하는 데스크톱 앱입니다. 자리를 비우면 알아서 화면을 끄고 재워줍니다.">
-<link rel="canonical" href="https://delight0517.github.io/35closer-timer-site/">
-<meta property="og:title" content="35Closer Timer">
-<meta property="og:description" content="집중이 끝나면, PC도 쉬게 하세요. Windows용 자동 절전 타이머.">
-<meta property="og:type" content="website">
-<style>
-  :root {
-    --bg: #0e0f12; --card:#17181d; --text:#f2f2f0; --muted:#a4a6ad;
-    --accent:#ff8a3d; --accent2:#4dd0e1; --border:#2a2c33;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin:0; background:var(--bg); color:var(--text);
-    font-family: -apple-system, "Segoe UI", "Pretendard", Arial, sans-serif;
-    line-height:1.6;
-  }
-  header { padding:80px 24px 40px; text-align:center; }
-  header h1 { font-size:2.4rem; margin:0 0 12px; }
-  header p { color:var(--muted); font-size:1.1rem; max-width:560px; margin:0 auto; }
-  .badge { display:inline-block; background:var(--card); border:1px solid var(--border);
-    border-radius:999px; padding:6px 16px; font-size:.85rem; color:var(--accent2); margin-bottom:20px; }
-  .cta { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
-  .btn { padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:600; }
-  .btn-primary { background:var(--accent); color:#111; }
-  .btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
-  main { max-width:880px; margin:0 auto; padding:20px 24px 100px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:40px; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px; }
-  .card h3 { margin-top:0; font-size:1.05rem; }
-  .card p { color:var(--muted); font-size:.95rem; margin-bottom:0; }
-  .lang-toggle { position:fixed; top:16px; right:16px; }
-  .lang-toggle button { background:var(--card); border:1px solid var(--border); color:var(--text);
-    padding:6px 14px; border-radius:8px; cursor:pointer; font-size:.85rem; }
-  footer { text-align:center; padding:40px 24px; color:var(--muted); font-size:.85rem; }
-  footer a { color:var(--accent2); }
-  [data-lang="en"] { display:none; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://delight0517.github.io/35closer-timer-site/">
+  <title>35Closer Timer — AI 에이전트 & 무인 작업 자동 절전 가디언</title>
+  <meta name="description" content="Claude, Codex, Antigravity 무인 작업 중엔 맥을 깨워두고, 작업 완료 후 유휴 상태가 감지되면 자동으로 절전시키는 맥북 무인 작업 가디언.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
+  <style>
+    :root {
+      --bg: #090d16;
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --bg-card-hover: rgba(26, 34, 52, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(16, 185, 129, 0.4);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-emerald: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --font: -apple-system, BlinkMacSystemFont, "Pretendard", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Glow Background */
+    .ambient-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 80% 25%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.07) 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navigation */
+    nav {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 22, 0.8);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text-main); }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.5);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border);
+      color: var(--text-main);
+      backdrop-filter: blur(8px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 96px 0 64px;
+      text-align: center;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-emerald);
+      margin-bottom: 24px;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .accent-gradient {
+      background: linear-gradient(135deg, var(--accent-emerald) 20%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p.lead {
+      max-width: 680px;
+      margin: 0 auto 36px;
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .hero-meta {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Bento Grid */
+    .bento-section {
+      padding: 48px 0 96px;
+    }
+    .section-header {
+      margin-bottom: 36px;
+      text-align: center;
+    }
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .bento-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .bento-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    }
+    .col-span-8 { grid-column: span 8; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-12 { grid-column: span 12; }
+
+    .card-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-emerald);
+      margin-bottom: 12px;
+    }
+    .bento-card h3 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .bento-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Simulation Component (Card 1) */
+    .sim-panel {
+      background: #060910;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 18px 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+    }
+    .sim-step {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .sim-step:last-child { border-bottom: none; }
+    .sim-tag {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .tag-active { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .tag-idle { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+    .tag-sleep { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+    /* Natural Language Pill Mockup (Card 2) */
+    .chat-bubble-mockup {
+      background: #060910;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+    .bubble-user {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      align-self: flex-start;
+      font-weight: 600;
+    }
+    .bubble-agent {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      align-self: stretch;
+      font-size: 0.82rem;
+    }
+
+    /* Terminal Code Mockup (Card 3) */
+    .terminal-box {
+      background: #060910;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+    }
+    .terminal-bar {
+      height: 32px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+    }
+    .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .term-red { background: #ef4444; }
+    .term-yellow { background: #f59e0b; }
+    .term-green { background: #10b981; }
+    .terminal-content {
+      padding: 16px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      position: relative;
+    }
+    .terminal-content .cmd { color: #38bdf8; font-weight: 600; }
+    .terminal-content .comment { color: var(--text-dim); }
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+    /* Security Specs (Card 4) */
+    .specs-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .specs-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+    .specs-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--accent-emerald);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* How It Works Steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 36px;
+    }
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .step-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent-emerald);
+      margin-bottom: 12px;
+      opacity: 0.8;
+    }
+    .step-card h4 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-main); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .col-span-8, .col-span-4, .col-span-6 { grid-column: span 12; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .hero { padding: 64px 0 40px; }
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
 </head>
 <body>
-<div class="lang-toggle"><button id="langBtn" onclick="toggleLang()">EN</button></div>
+  <div class="ambient-bg"></div>
 
-<header>
-  <span class="badge" data-lang="ko">Windows 데스크톱 앱</span>
-  <span class="badge" data-lang="en">Windows Desktop App</span>
-  <h1 data-lang="ko">35Closer Timer</h1>
-  <h1 data-lang="en" style="display:none">35Closer Timer</h1>
-  <p data-lang="ko">집중이 끝나면, PC도 쉬게 하세요. 원형 카운트다운 타이머 + 자리를 비우면 알아서 화면을 끄고 재우는 스마트 자동 절전.</p>
-  <p data-lang="en" style="display:none">When your focus session ends, let your PC rest too. A circular countdown timer with smart auto-sleep that turns off the display and puts your PC to sleep when you step away.</p>
-  <div class="cta">
-    <a class="btn btn-primary" href="#" data-lang="ko">Microsoft Store에서 받기 (심사 중)</a>
-    <a class="btn btn-primary" href="#" data-lang="en" style="display:none">Get it on Microsoft Store (in review)</a>
-    <a class="btn btn-secondary" href="privacy.html" data-lang="ko">개인정보처리방침</a>
-    <a class="btn btn-secondary" href="privacy.html" data-lang="en" style="display:none">Privacy Policy</a>
-  </div>
-</header>
+  <!-- Navigation -->
+  <nav>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <a href="#" class="brand">
+        <div class="brand-icon">⏱️</div>
+        <span>35Closer <span style="color: var(--accent-emerald); font-weight: 400;">Guardian</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">기능</a>
+        <a href="#cli" class="nav-link">터미널 CLI</a>
+        <a href="https://github.com/delight0517/35closer-timer-site" target="_blank" class="nav-link">GitHub ⭐</a>
+        <a href="https://github.com/delight0517/35closer-timer-site/releases/latest" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
+          ⬇ 최신 다운로드
+        </a>
+      </div>
+    </div>
+  </nav>
 
-<main>
-  <div class="grid">
-    <div class="card">
-      <h3 data-lang="ko">⏱ 원형 카운트다운 타이머</h3>
-      <h3 data-lang="en" style="display:none">⏱ Circular Countdown Timer</h3>
-      <p data-lang="ko">한눈에 보이는 심플한 타이머로 집중 세션을 관리하세요. 타이머가 끝나면 원하는 동작(알림/화면 끄기/절전)을 지정할 수 있습니다.</p>
-      <p data-lang="en" style="display:none">Manage your focus sessions with a simple, glanceable timer. Choose what happens when it ends — notify, turn off the display, or sleep.</p>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        <span>v1.1.0 Apple Notarized · macOS 12+ Universal</span>
+      </div>
+      <h1 class="gradient-text">
+        AI 에이전트에게 밤샘 작업을 맡겼다면,<br>
+        <span class="accent-gradient">맥북의 수면은 35Closer에게 맡기세요.</span>
+      </h1>
+      <p class="lead">
+        Claude Code, Codex, Antigravity 무인 코딩과 대용량 빌드가 돌아가는 동안에는 맥을 깨워두고(Caffeinate),<br>
+        작업이 끝나 유휴 상태가 감지되면 알아서 안전하게 맥을 재웁니다. 배터리 방전과 과열 없는 완벽한 퇴근 파이프라인.
+      </p>
+      <div class="hero-cta">
+        <a href="https://github.com/delight0517/35closer-timer-site/releases/latest" class="btn btn-primary" style="font-size: 1.05rem; padding: 14px 28px;">
+          ⬇ macOS v1.1.0 다운로드 (.dmg)
+        </a>
+        <a href="https://github.com/delight0517/35closer-timer-site" target="_blank" class="btn btn-secondary" style="font-size: 1.05rem; padding: 14px 24px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          GitHub 소스코드 (MIT 오픈소스)
+        </a>
+      </div>
+      <p class="hero-meta">Apple Developer ID 공식 서명 및 Notarization 공증 완료 · Gatekeeper 보안 경고 없음</p>
     </div>
-    <div class="card">
-      <h3 data-lang="ko">🌙 스마트 자동 절전</h3>
-      <h3 data-lang="en" style="display:none">🌙 Smart Auto-Sleep</h3>
-      <p data-lang="ko">키보드/마우스 입력이 없으면 단계적으로 화면을 끄고, 계속 자리를 비우면 실제로 PC를 재웁니다. 켜져만 있는 화면 때문에 전력을 낭비하지 마세요.</p>
-      <p data-lang="en" style="display:none">Turns off your display after a period of no input, and puts the PC to sleep if you stay away — no more wasted power from a screen left on.</p>
-    </div>
-    <div class="card">
-      <h3 data-lang="ko">🔒 안전한 확인 절차</h3>
-      <h3 data-lang="en" style="display:none">🔒 Safe Confirmation</h3>
-      <p data-lang="ko">화면을 끄거나 재우기 전, 취소 가능한 확인 창이 항상 먼저 뜹니다. 작업 중 실수로 잠기는 일이 없도록 설계했습니다.</p>
-      <p data-lang="en" style="display:none">A cancellable confirmation always appears before the display turns off or the PC sleeps — designed so you're never locked out mid-task by mistake.</p>
-    </div>
-    <div class="card">
-      <h3 data-lang="ko">📊 자리비움 리포트</h3>
-      <h3 data-lang="en" style="display:none">📊 Idle & Usage Reports</h3>
-      <p data-lang="ko">오늘/어제/이번 주 단위로 자동 절전이 언제 왜 동작했는지 확인할 수 있습니다.</p>
-      <p data-lang="en" style="display:none">Check when and why auto-sleep triggered, broken down by today, yesterday, or this week.</p>
-    </div>
-  </div>
-</main>
+  </section>
 
-<footer>
-  <p data-lang="ko">35Closer Timer &middot; <a href="privacy.html">개인정보처리방침</a></p>
-  <p data-lang="en" style="display:none">35Closer Timer &middot; <a href="privacy.html">Privacy Policy</a></p>
-</footer>
+  <!-- Bento Grid Section -->
+  <section class="bento-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">작업자의 수면과 배터리를 지키는 Bento Grid</h2>
+        <p class="section-desc">단순한 타이머를 넘어, 무인 작업 프로세스를 똑똑하게 모니터링합니다.</p>
+      </div>
 
-<script>
-function toggleLang(){
-  const isKo = document.querySelector('[data-lang="ko"]').style.display !== 'none';
-  document.querySelectorAll('[data-lang="ko"]').forEach(el => el.style.display = isKo ? 'none' : '');
-  document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = isKo ? '' : 'none');
-  document.getElementById('langBtn').textContent = isKo ? '한국어' : 'EN';
-}
-</script>
+      <div class="bento-grid">
+        <!-- Bento 1: Auto Sleep Guardian (8 cols) -->
+        <div class="bento-card col-span-8">
+          <div>
+            <span class="card-label">Auto-Sleep Guardian</span>
+            <h3>작업 중엔 각성(Keep-Awake), 끝나면 즉시 절전</h3>
+            <p>
+              AI 에이전트 프로세스, Xcode/Flutter 빌드, 3D 렌더링이 가동 중일 때는 Caffeinate로 시스템이 잠들지 않도록 방어합니다.
+              작업이 완료되어 CPU가 유휴(Idle) 상태에 도달하면 Mac을 자동으로 절전 모드로 전환합니다.
+            </p>
+          </div>
+          <div class="sim-panel">
+            <div class="sim-step">
+              <span>⚡ [Active] Codex & Antigravity Batch Loop Running</span>
+              <span class="sim-tag tag-active">Caffeinate ACTIVE</span>
+            </div>
+            <div class="sim-step">
+              <span>💤 [Settled] Background Tasks Complete · CPU &lt; 2.0%</span>
+              <span class="sim-tag tag-idle">System IDLE DETECTED</span>
+            </div>
+            <div class="sim-step">
+              <span>🌙 [Guardian] Entering Safe Sleep Mode · Hardware Protected</span>
+              <span class="sim-tag tag-sleep">AUTO SLEEP TRIGGERED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento 2: Natural Language Control (4 cols) -->
+        <div class="bento-card col-span-4">
+          <div>
+            <span class="card-label">Natural Language</span>
+            <h3>말하듯 편한 자연어 타이머</h3>
+            <p>분/초 계산 없이 메뉴바에서 자연스럽게 한마디만 입력하세요. 의도를 정확히 해석합니다.</p>
+          </div>
+          <div class="chat-bubble-mockup">
+            <div class="bubble bubble-user">💬 "30분 뒤에 자"</div>
+            <div class="bubble bubble-agent">⏱️ 30분 집중 타이머 시작 · 종료 후 자동 절전 활성화</div>
+            <div class="bubble bubble-user">💬 "빌드 끝나면 자"</div>
+            <div class="bubble bubble-agent">🛡️ 백그라운드 프로세스 감시 대기 · 유휴 시 슬립 전환</div>
+          </div>
+        </div>
+
+        <!-- Bento 3: Terminal CLI (6 cols) -->
+        <div class="bento-card col-span-6" id="cli">
+          <div>
+            <span class="card-label">Developer Pipeline</span>
+            <h3>터미널 해커를 위한 35closerctl CLI</h3>
+            <p>
+              야간 빌드 스크립트나 배치 작업의 마지막 줄에 한 줄만 덧붙이세요.
+              터미널 파이프라인에서 완벽하게 제어할 수 있습니다.
+            </p>
+          </div>
+          <div class="terminal-box">
+            <div class="terminal-bar">
+              <div class="term-dot term-red"></div>
+              <div class="term-dot term-yellow"></div>
+              <div class="term-dot term-green"></div>
+              <span style="font-size:0.75rem; color:var(--text-dim); margin-left:8px;">zsh — 35closerctl</span>
+            </div>
+            <div class="terminal-content">
+              <button class="copy-btn" onclick="navigator.clipboard.writeText('npm run build && 35closerctl sleep --after-idle'); this.innerText='복사됨!'; setTimeout(()=>this.innerText='복사', 2000);">복사</button>
+              <div class="comment"># 대규모 빌드 완료 후 Mac 자동 절전 대기</div>
+              <div>$ <span class="cmd">npm run build &amp;&amp; 35closerctl sleep --after-idle</span></div>
+              <br>
+              <div class="comment"># 가디언 상태 즉시 확인</div>
+              <div>$ <span class="cmd">35closerctl status</span></div>
+              <div style="color: #10b981;">✓ Guardian active · idleQuiet: 12m · sleepArm: ready</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento 4: Native & Notarized (6 cols) -->
+        <div class="bento-card col-span-6">
+          <div>
+            <span class="card-label">Security & Performance</span>
+            <h3>100% Native, 초경량, Apple 공증 완료</h3>
+            <p>
+              무거운 웹 기반 앱이 아닙니다. 백그라운드에서 CPU 점유율 0.0%, 메모리 50MB 수준으로 조용하게 작동하며 맥북의 성능을 전혀 갉아먹지 않습니다.
+            </p>
+          </div>
+          <ul class="specs-list">
+            <li class="specs-item">
+              <span class="specs-icon">✓</span>
+              <span><strong>Apple Developer ID 서명 &amp; 공증:</strong> Gatekeeper 차단 없이 원클릭 실행</span>
+            </li>
+            <li class="specs-item">
+              <span class="specs-icon">✓</span>
+              <span><strong>초경량 리소스:</strong> 유휴 시 CPU 0.0%, 메모리 ~55MB 가벼운 상주</span>
+            </li>
+            <li class="specs-item">
+              <span class="specs-icon">✓</span>
+              <span><strong>Universal Binary:</strong> Intel 및 Apple Silicon (M1/M2/M3/M4) 완벽 네이티브 지원</span>
+            </li>
+            <li class="specs-item">
+              <span class="specs-icon">✓</span>
+              <span><strong>투명한 오픈소스:</strong> MIT 라이선스로 소스코드 100% 공개</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section style="padding: 48px 0 96px; border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">퇴근 1초 전, 이렇게 사용하세요</h2>
+        <p class="section-desc">복잡한 설정 없이 3단계로 바로 시작할 수 있습니다.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <h4>35Closer 켜기</h4>
+          <p>앱을 실행하면 상단 메뉴바에 귀여운 타이머 아이콘으로 조용히 상주합니다.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <h4>AI 작업 또는 빌드 시작</h4>
+          <p>Claude Code, Codex, Xcode 대용량 빌드를 걸어두세요. 35Closer가 감시를 시작합니다.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <h4>안심하고 퇴근 &amp; 취침</h4>
+          <p>작업 중엔 맥을 깨워두고, 작업 완료 후 시스템이 쉬면 알아서 맥을 재워 배터리를 보존합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/delight0517/35closer-timer-site" target="_blank">GitHub</a>
+        <a href="https://github.com/delight0517/35closer-timer-site/releases/latest" target="_blank">릴리즈 다운로드</a>
+        <a href="privacy.html">개인정보처리방침</a>
+        <a href="https://github.com/delight0517/35closer-timer-site/issues" target="_blank">이슈 제보</a>
+      </div>
+      <p>© 2026 35Closer Timer · MIT License · Created by GeunHu Kim</p>
+      <p style="margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);">Designed with M-Oasis Marketing Content Studio</p>
+    </div>
+  </footer>
 </body>
 </html>
